@@ -236,8 +236,8 @@ XTmrCtr_SetOptions(timerInstance, 0,/
       old_val = temp;
       return time_val;
     }
-    else{ //if it has rolled over
-      time_val = old_val - temp;
+    if(temp<old_val){ //if it has rolled over
+      time_val = 2^32-(old_val - temp);
       old_val = temp;
       return time_val;
     }
