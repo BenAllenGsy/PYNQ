@@ -181,6 +181,9 @@ void cb_push_incr_ptrs(circular_buffer *cb){
 }
 
 void delay_us(int usdelay){
+    // setup timer options 
+    XTmrCtr_SetOptions(&TimerInst_0, 1, XTC_AUTO_RELOAD_OPTION | \
+                            XTC_CSR_LOAD_MASK | XTC_CSR_DOWN_COUNT_MASK);
     // us delay
     XTmrCtr_SetResetValue(&TimerInst_0, 1, usdelay*100);
     // Start the timer0 for usdelay us delay
@@ -192,6 +195,9 @@ void delay_us(int usdelay){
 }
 
 void delay_ms(u32 msdelay){
+    // setup timer options 
+    XTmrCtr_SetOptions(&TimerInst_0, 1, XTC_AUTO_RELOAD_OPTION | \
+                            XTC_CSR_LOAD_MASK | XTC_CSR_DOWN_COUNT_MASK);
     // ms delay
     XTmrCtr_SetResetValue(&TimerInst_0, 1, msdelay*100*1000);
     // Start the timer0 for usdelay us delay
@@ -201,6 +207,57 @@ void delay_ms(u32 msdelay){
     // Stop the timer0
     XTmrCtr_Stop(&TimerInst_0, 1);
 }
+
+void get_capture(int option){
+  /*
+  * adds functionality to get time between calls.
+  * first call, option must = 0.
+  * subsequent calls, opton = 1 or option = 2.
+  * option 2 is used to stop and reset timer.
+  */
+  //starts timer in capture mode
+  long old_val;
+  long time_val;
+  if(option==0){
+XTmrCtr_SetOptions(&timer_inst_0, 0,/
+   XTC_CAPTURE_MODE_OPTION | XTC_CSR_ENABLE_TMR_MASK); //set timer 0 option
+    XTmrCtr_SetResetValue(&TimerInst_0, 0, 0);
+    XTmrCtr_Reset(&TimerInst_0,0);
+    XTmrCtr_Start(&TimerInst_0, 0);
+    old_val =0
+    return 0;
+  }
+  if(option==1){//get the capture value
+    long temp = XTmrCtr_GetTimerCounterReg(&TimerInst_0->BaseAddress, 0);
+    if(captureVal<temp){
+      time_val = temp - old_val;
+      capture_val = temp;
+      return time_val;
+    }
+    else{ //if it has rolled over
+      time_val = old_val - temp;
+      old_val = temp;
+      return time_val;
+    }
+  }
+  if(option==2){ //stop timer and reset
+    XTmrCtr_SetResetValue(&TimerInst_0, 0, 0);
+    XTmrCtr_Reset(&TimerInst_0, 0);
+    XTmrCtr_Stop(&timerInstance, 0);
+    return 0;
+  }
+
+void get_timer_instance(void){
+  /*
+  * returns instance pointer for TimerInst_0, if this is used it is
+  * advisable to not make use of the additional timer realted functions
+  * such as delay_ms, delay_us, or get_capture as this will interfere with
+  * the instance being used.
+  */
+  return &TimerInst_0;
+}
+
+
 
 /*
  * Switch Configuration
