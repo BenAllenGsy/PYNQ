@@ -208,7 +208,7 @@ void delay_ms(u32 msdelay){
     XTmrCtr_Stop(&TimerInst_0, 1);
 }
 
-void get_capture(int option){
+long get_capture(int option){
   /*
   * adds functionality to get time between calls.
   * first call, option must = 0.
@@ -218,8 +218,10 @@ void get_capture(int option){
   //starts timer in capture mode
   long old_val;
   long time_val;
+  XTmrCtr* timerInstance;
+  timerInstance = &TimerInst_0;
   if(option==0){
-XTmrCtr_SetOptions(&timer_inst_0, 0,/
+XTmrCtr_SetOptions(timerInstance, 0,/
    XTC_CAPTURE_MODE_OPTION | XTC_CSR_ENABLE_TMR_MASK); //set timer 0 option
     XTmrCtr_SetResetValue(&TimerInst_0, 0, 0);
     XTmrCtr_Reset(&TimerInst_0,0);
@@ -228,10 +230,10 @@ XTmrCtr_SetOptions(&timer_inst_0, 0,/
     return 0;
   }
   if(option==1){//get the capture value
-    long temp = XTmrCtr_GetTimerCounterReg(&TimerInst_0->BaseAddress, 0);
-    if(captureVal<temp){
+    long temp = XTmrCtr_GetTimerCounterReg(timerInstance->BaseAddress, 0);
+    if(old_val<temp){
       time_val = temp - old_val;
-      capture_val = temp;
+      old_val = temp;
       return time_val;
     }
     else{ //if it has rolled over
@@ -247,7 +249,7 @@ XTmrCtr_SetOptions(&timer_inst_0, 0,/
     return 0;
   }
 
-void get_timer_instance(void){
+XTmrCtr* get_timer_instance(void){
   /*
   * returns instance pointer for TimerInst_0, if this is used it is
   * advisable to not make use of the additional timer realted functions
